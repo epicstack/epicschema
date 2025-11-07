@@ -1,0 +1,46 @@
+{
+  "openSchema": "0.1",
+  "types": {
+    "Animal": {
+      "kind": "object",
+      "abstract": true,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "required": ["name", "type"],
+      "discriminator": {
+        "field": "type",
+        "mapping": {
+          "dog": "Dog",
+          "cat": "Cat"
+        }
+      }
+    },
+    "Dog": {
+      "kind": "object",
+      "extends": "Animal",
+      "discriminator": {
+        "value": "dog"
+      },
+      "properties": {
+        "barkVolume": {
+          "type": "float"
+        }
+      },
+      "required": ["barkVolume"]
+    },
+    "Cat": {
+      "kind": "object",
+      "extends": "Animal",
+      "discriminator": { "value": "cat" },
+      "properties": {
+        "lives": { "type": "int", "min": 1 }
+      }
+    }
+  }
+}
