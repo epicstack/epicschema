@@ -66,3 +66,23 @@ writeFileSync("./results/conformance-report.md", reportLines.join("\n"))
 console.log(
   chalk.bold("\nConformance report written to results/conformance-report.md")
 )
+
+// Determine if there were any mismatches or unexpected errors
+const failed = results.some((r) => {
+  const expectedResult = expected[r.file]
+  return r.status !== expectedResult
+})
+
+// Exit with non-zero code if any test failed
+if (failed) {
+  console.error(
+    chalk.red.bold(
+      "\n❌ Conformance check failed. Some results did not match expected outcomes.\n"
+    )
+  )
+  process.exit(1)
+} else {
+  console.log(
+    chalk.green.bold("\n✅ All conformance tests passed successfully.\n")
+  )
+}
