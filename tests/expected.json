@@ -1,0 +1,8 @@
+{
+  "valid/basic_object.os.json": "valid",
+  "valid/inheritance.os.json": "valid",
+  "valid/discriminator.os.json": "valid",
+  "invalid/missing_kind.os.json": "invalid",
+  "invalid/unknown_ref.os.json": "invalid",
+  "invalid/inheritance_cycle.os.json": "invalid"
+}

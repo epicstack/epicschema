@@ -1,0 +1,44 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        language: [typescript, csharp]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # TypeScript validator
+      - name: Setup Node.js
+        if: matrix.language == 'typescript'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Build TypeScript Validator
+        if: matrix.language == 'typescript'
+        run: |
+          cd validators/typescript
+          npm ci
+          npm run build
+
+      # .NET validator
+      - name: Setup .NET
+        if: matrix.language == 'csharp'
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Build C# Validator
+        if: matrix.language == 'csharp'
+        run: |
+          cd validators/csharp
+          dotnet restore
+          dotnet build -c Release

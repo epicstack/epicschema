@@ -1,4 +1,3 @@
-
 using System.Text.Json.Nodes;
 using OpenSchema.Validation;
 
@@ -51,20 +50,25 @@ public sealed class SemanticValidator
             var ext = type.TryGet("extends")?.ToString()?.Trim('"');
             if (!string.IsNullOrEmpty(ext) && !_ctx.Types.ContainsKey(ext!))
                 _ctx.Error($"/types/{name}/extends", "ref.unknown", $"Unknown base type '{ext}'.");
+
             // implements
             foreach (var itf in type.TryGet("implements").StringArray())
                 if (!_ctx.Types.TryGetValue(itf, out var t) || t.Kind() != "interface")
                     _ctx.Error($"/types/{name}/implements", "ref.interface", $"'{itf}' is not a known interface.");
+
             // property $ref, list, map
             var props = type.Properties();
             if (props is null) continue;
+
             foreach (var (pname, pnode) in props.Props())
             {
                 if (pnode is not JsonObject p) continue;
+
                 // $ref
                 var r = p.TryGet("$ref")?.ToString()?.Trim('"');
                 if (!string.IsNullOrEmpty(r) && !_ctx.Types.ContainsKey(r!))
                     _ctx.Error($"/types/{name}/properties/{pname}/$ref", "ref.unknown", $"Unknown type reference '{r}'.");
+
                 // list
                 if (p.TryGet("list") is JsonNode ln and not null and not JsonValue)
                 {
@@ -72,6 +76,7 @@ public sealed class SemanticValidator
                     if (!_ctx.Types.ContainsKey(ls))
                         _ctx.Error($"/types/{name}/properties/{pname}/list", "ref.unknown", $"Unknown list element type '{ls}'.");
                 }
+
                 // map
                 if (p.TryGet("map") is JsonNode mn and not null and not JsonValue)
                 {
@@ -85,7 +90,7 @@ public sealed class SemanticValidator
 
     private void ValidateInheritance()
     {
-        var parent = new Dictionary<string,string?>();
+        var parent = new Dictionary<string, string?>();
         foreach (var (name, type) in _ctx.Types)
         {
             var kind = type.Kind();
@@ -101,6 +106,7 @@ public sealed class SemanticValidator
             else parent[name] = null;
         }
 
+        // Detect cycles in the inheritance graph
         foreach (var (name, _) in _ctx.Types)
         {
             var seen = new HashSet<string>();
@@ -112,9 +118,11 @@ public sealed class SemanticValidator
             }
         }
 
+        // Validate property redefinition and value-object rules
         foreach (var (name, type) in _ctx.Types)
         {
             if (!parent.TryGetValue(name, out var p) || p is null) continue;
+
             var props = type.Properties() ?? new JsonObject();
             var allBaseProps = GetAllProps(p);
             foreach (var (pn, pv) in props)
@@ -125,28 +133,57 @@ public sealed class SemanticValidator
                         _ctx.Error($"/types/{name}/properties/{pn}", "inherit.prop.redefine", $"Property '{pn}' redefined incompatibly.");
                 }
             }
+
             var baseType = _ctx.Types[p];
             if (baseType.TryGet("valueObject")?.ToString() == "true")
                 _ctx.Error($"/types/{name}/extends", "inherit.valueObject", "Value objects cannot be extended.");
         }
     }
 
+    /// <summary>
+    /// Collects all properties from the specified type, including those inherited via 'extends'.
+    /// This implementation is cycle-safe: it tracks visited types and stops on repeat to avoid infinite loops.
+    /// It also has a conservative max depth guard to prevent pathological inputs from hanging validation.
+    /// </summary>
     private Dictionary<string, JsonNode> GetAllProps(string typeName)
     {
+        const int MaxDepth = 1024;
         var map = new Dictionary<string, JsonNode>();
+        var visited = new HashSet<string>();
         var cur = typeName;
+        var depth = 0;
+
         while (_ctx.Types.TryGetValue(cur, out var t))
         {
+            if (!visited.Add(cur))
+            {
+                // Cycle encountered; stop property collection here.
+                break;
+            }
+
+            // Depth guard for extra safety
+            depth++;
+            if (depth > MaxDepth)
+            {
+                // Too deep/complex inheritance chain; stop collecting to avoid hangs.
+                break;
+            }
+
             var props = t.Properties();
             if (props is not null)
             {
                 foreach (var kv in props)
-                    if (!map.ContainsKey(kv.Key)) map[kv.Key] = kv.Value!;
+                {
+                    if (!map.ContainsKey(kv.Key))
+                        map[kv.Key] = kv.Value!;
+                }
             }
+
             var ext = t.TryGet("extends")?.ToString()?.Trim('"');
             if (string.IsNullOrEmpty(ext)) break;
             cur = ext!;
         }
+
         return map;
     }
 
@@ -157,8 +194,10 @@ public sealed class SemanticValidator
             foreach (var itf in type.TryGet("implements").StringArray())
             {
                 if (!_ctx.Types.TryGetValue(itf, out var iface) || iface.Kind() != "interface") continue;
+
                 var ifaceProps = iface.Properties() ?? new();
                 var objProps = GetAllProps(name);
+
                 foreach (var kv in ifaceProps)
                 {
                     if (!objProps.TryGetValue(kv.Key, out var myProp))
@@ -209,11 +248,12 @@ public sealed class SemanticValidator
             }
         }
 
-        var siblingsByBase = new Dictionary<string, Dictionary<string,string>>();
+        var siblingsByBase = new Dictionary<string, Dictionary<string, string>>();
         foreach (var (name, type) in _ctx.Types)
         {
             var baseName = type.TryGet("extends")?.ToString()?.Trim('"');
             if (string.IsNullOrEmpty(baseName)) continue;
+
             var baseType = _ctx.Types[baseName!];
             var baseDisc = baseType.TryGet("discriminator") as JsonObject;
             if (baseDisc is null) continue;
@@ -279,7 +319,7 @@ public sealed class SemanticValidator
         foreach (var (name, type) in _ctx.Types)
         {
             if (type.Kind() != "enum") continue;
-            foreach (var field in new[] { "properties","extends","implements","identity","valueObject","discriminator" })
+            foreach (var field in new[] { "properties", "extends", "implements", "identity", "valueObject", "discriminator" })
             {
                 if (type.ContainsKey(field))
                     _ctx.Error($"/types/{name}", "enum.forbidden", $"Enum cannot define '{field}'.");

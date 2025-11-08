@@ -1,0 +1,13 @@
+{
+  "openSchema": "0.1",
+  "types": {
+    "Order": {
+      "kind": "object",
+      "properties": {
+        "customer": {
+          "$ref": "Customer"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,45 @@
+name: Conformance Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  conformance:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Build TypeScript Validator
+        run: |
+          cd validators/typescript
+          npm ci
+          npm run build
+
+      - name: Build .NET Validator
+        run: |
+          cd validators/csharp
+          dotnet restore
+          dotnet build -c Release
+
+      - name: Run Conformance Suite
+        run: |
+          cd runner
+          npm ci
+          npm run test:conformance
+
+      - name: Upload Conformance Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: conformance-report
+          path: runner/results/conformance-report.md

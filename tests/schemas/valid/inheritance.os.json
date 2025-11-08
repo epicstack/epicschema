@@ -1,0 +1,22 @@
+{
+  "openSchema": "0.1",
+  "types": {
+    "Animal": {
+      "kind": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "Dog": {
+      "kind": "object",
+      "extends": "Animal",
+      "properties": {
+        "barkVolume": {
+          "type": "float"
+        }
+      }
+    }
+  }
+}

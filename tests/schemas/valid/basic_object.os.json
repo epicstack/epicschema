@@ -1,0 +1,16 @@
+{
+  "openSchema": "0.1",
+  "types": {
+    "Person": {
+      "kind": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "age": {
+          "type": "int"
+        }
+      }
+    }
+  }
+}

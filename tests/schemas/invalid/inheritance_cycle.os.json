@@ -1,0 +1,13 @@
+{
+  "openSchema": "0.1",
+  "types": {
+    "A": {
+      "kind": "object",
+      "extends": "B"
+    },
+    "B": {
+      "kind": "object",
+      "extends": "A"
+    }
+  }
+}
