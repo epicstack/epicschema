@@ -1,0 +1,21 @@
+{
+  "name": "openschema-ts",
+  "version": "0.1.1",
+  "private": false,
+  "description": "OpenSchema v0.1 \u2014 TypeScript validator & CLI (CommonJS build for Node)",
+  "bin": {
+    "openschema": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "validate": "node dist/cli.js validate examples/example.os.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "ajv": "^8.12.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.5",
+    "typescript": "^5.6.3"
+  }
+}
