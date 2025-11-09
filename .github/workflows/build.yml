@@ -36,4 +36,4 @@ jobs:
         run: pnpm tsc -p tsconfig.base.json
 
       - name: Run validator smoke test
-        run: node packages/validator-ts/dist/cli.js examples/example.os.json
+        run: node packages/validator-ts/dist/cli.js tests/schemas/valid/basic_object.os.json
