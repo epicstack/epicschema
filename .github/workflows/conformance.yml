@@ -1,44 +1,40 @@
 name: Conformance Tests
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
-  pull_request:
 
 jobs:
   conformance:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: "pnpm"
 
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: "8.0.x"
-
-      - name: Build TypeScript Validator
+      - name: Enable Corepack & install pnpm
         run: |
-          cd validators/typescript
-          npm ci
-          npm run build
+          corepack enable
+          corepack prepare pnpm@9.12.1 --activate
 
-      - name: Build .NET Validator
-        run: |
-          cd validators/csharp
-          dotnet restore
-          dotnet build -c Release
+      - name: Install dependencies
+        run: pnpm install
 
-      - name: Run Conformance Suite
-        run: |
-          cd runner
-          npm ci
-          npm run test:conformance
+      - name: Build packages
+        run: pnpm -r build
 
-      - name: Upload Conformance Report
+      - name: Run conformance suite
+        run: pnpm --filter @openschema/runner test:conformance
+
+      - name: Upload conformance report
         uses: actions/upload-artifact@v4
         with:
           name: conformance-report

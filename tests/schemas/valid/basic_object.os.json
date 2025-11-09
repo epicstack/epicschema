@@ -6,11 +6,11 @@
       "properties": {
         "name": {
           "type": "string"
-        },
-        "age": {
-          "type": "int"
         }
-      }
+      },
+      "required": [
+        "name"
+      ]
     }
   }
 }

@@ -1,12 +1,8 @@
 {
   "openSchema": "0.1",
   "types": {
-    "User": {
-      "properties": {
-        "id": {
-          "type": "int"
-        }
-      }
+    "Foo": {
+      "description": "missing kind"
     }
   }
 }

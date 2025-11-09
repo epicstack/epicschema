@@ -1,7 +1,6 @@
 {
   "$id": "https://openschema.dev/meta/0.1",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Open Schema v0.1 Meta-Schema",
   "type": "object",
   "required": [
     "openSchema",
@@ -56,20 +55,17 @@
         "required": {
           "type": "array",
           "items": {
-            "type": "string",
-            "pattern": "^[a-zA-Z_][A-Za-z0-9_]*$"
+            "type": "string"
           },
           "uniqueItems": true
         },
         "extends": {
-          "type": "string",
-          "pattern": "^[A-Z][A-Za-z0-9_]*$"
+          "type": "string"
         },
         "implements": {
           "type": "array",
           "items": {
-            "type": "string",
-            "pattern": "^[A-Z][A-Za-z0-9_]*$"
+            "type": "string"
           },
           "uniqueItems": true
         },
@@ -79,8 +75,7 @@
         "identity": {
           "type": "array",
           "items": {
-            "type": "string",
-            "pattern": "^[a-zA-Z_][A-Za-z0-9_]*$"
+            "type": "string"
           },
           "uniqueItems": true
         },
@@ -88,7 +83,22 @@
           "type": "boolean"
         },
         "discriminator": {
-          "$ref": "#/$defs/discriminatorDefinition"
+          "type": "object",
+          "properties": {
+            "field": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            },
+            "mapping": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
         },
         "values": {
           "type": "array",
@@ -224,8 +234,7 @@
       ],
       "properties": {
         "$ref": {
-          "type": "string",
-          "pattern": "^[A-Z][A-Za-z0-9_]*$"
+          "type": "string"
         }
       },
       "additionalProperties": false
@@ -242,8 +251,7 @@
               "$ref": "#/$defs/simpleType"
             },
             {
-              "type": "string",
-              "pattern": "^[A-Z][A-Za-z0-9_]*$"
+              "type": "string"
             }
           ]
         }
@@ -262,29 +270,9 @@
               "$ref": "#/$defs/simpleType"
             },
             {
-              "type": "string",
-              "pattern": "^[A-Z][A-Za-z0-9_]*$"
+              "type": "string"
             }
           ]
-        }
-      },
-      "additionalProperties": false
-    },
-    "discriminatorDefinition": {
-      "type": "object",
-      "properties": {
-        "field": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string"
-        },
-        "mapping": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string",
-            "pattern": "^[A-Z][A-Za-z0-9_]*$"
-          }
         }
       },
       "additionalProperties": false

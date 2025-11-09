@@ -1,44 +1,38 @@
-name: Build
+name: Build & Test
 
 on:
   push:
     branches: [main]
   pull_request:
+    branches: [main]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        language: [typescript, csharp]
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      # TypeScript validator
       - name: Setup Node.js
-        if: matrix.language == 'typescript'
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: "pnpm"
 
-      - name: Build TypeScript Validator
-        if: matrix.language == 'typescript'
+      - name: Enable Corepack & install pnpm
         run: |
-          cd validators/typescript
-          npm ci
-          npm run build
+          corepack enable
+          corepack prepare pnpm@9.12.1 --activate
 
-      # .NET validator
-      - name: Setup .NET
-        if: matrix.language == 'csharp'
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: "8.0.x"
+      - name: Install dependencies
+        run: pnpm install
 
-      - name: Build C# Validator
-        if: matrix.language == 'csharp'
-        run: |
-          cd validators/csharp
-          dotnet restore
-          dotnet build -c Release
+      - name: Build all packages
+        run: pnpm -r build
+
+      - name: Run TypeScript check (optional)
+        run: pnpm tsc -p tsconfig.base.json
+
+      - name: Run validator smoke test
+        run: node packages/validator-ts/dist/cli.js examples/example.os.json
